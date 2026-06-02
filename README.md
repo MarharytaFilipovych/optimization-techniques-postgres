@@ -19,13 +19,13 @@ Be aware, that after that step I had to wait at least for 5 minutes to gather so
 Then I executed this query to see the statistics:
 ```sql
 SELECT query,calls,
-    round(total_exec_time::numeric, 2) AS total_ms,
-    round(mean_exec_time::numeric,  2) AS mean_ms, rows
+round(total_exec_time::numeric, 2) AS total_ms,
+round(mean_exec_time::numeric,  2) AS mean_ms, rows
 FROM pg_stat_statements
 ORDER BY total_exec_time DESC
 LIMIT 10;
 ```
-The results are in [here](./analyze/before/queries_stats.md):
+The **results**:
 
 | query | calls | total\_ms | mean\_ms | rows |
 | :--- | :--- | :--- | :--- | :--- |
@@ -189,10 +189,10 @@ The **results**:
 
 ```sql
 SELECT
-    c.customer_id,
-    c.full_name,
-    COUNT(o.order_id) AS orders_count,
-    SUM(o.total_amount) AS revenue
+c.customer_id,
+c.full_name,
+COUNT(o.order_id) AS orders_count,
+SUM(o.total_amount) AS revenue
 FROM customers c
 JOIN orders o ON c.customer_id = o.customer_id
 WHERE c.status = 'active'
@@ -268,10 +268,10 @@ The **results**:
 
 ```sql
 SELECT
-    customer_id,
-    event_type,
-    COUNT(*) AS events_count,
-    MAX(event_time) AS last_event_time
+customer_id,
+event_type,
+COUNT(*) AS events_count,
+MAX(event_time) AS last_event_time
 FROM customer_events_wide
 WHERE event_time >= NOW() - INTERVAL '180 days'
 GROUP BY customer_id, event_type
@@ -338,9 +338,9 @@ The **results**:
 
 ```sql
 SELECT
-    p.category,
-    COUNT(*) AS items_sold,
-    SUM(oi.quantity * oi.unit_price) AS revenue
+p.category,
+COUNT(*) AS items_sold,
+SUM(oi.quantity * oi.unit_price) AS revenue
 FROM order_items oi
 JOIN products p ON oi.product_id = p.product_id
 GROUP BY p.category
@@ -389,13 +389,13 @@ However, having run the analysis, I observed that it has no effect and I dropped
 
 ```sql
 WITH item_totals AS (
-    SELECT product_id, COUNT(*) AS items_sold,
-        SUM(quantity * unit_price) AS revenue
-    FROM order_items
-    GROUP BY product_id
+SELECT product_id, COUNT(*) AS items_sold,
+    SUM(quantity * unit_price) AS revenue
+FROM order_items
+GROUP BY product_id
 )
 SELECT p.category, SUM(it.items_sold) AS items_sold,
-    SUM(it.revenue) AS revenue
+SUM(it.revenue) AS revenue
 FROM item_totals it
 JOIN products p ON it.product_id = p.product_id
 GROUP BY p.category
@@ -535,8 +535,8 @@ Then I waited for some time and checked the new results:
 
 ```sql
 SELECT query,calls,
-    round(total_exec_time::numeric, 2) AS total_ms,
-    round(mean_exec_time::numeric, 2) AS mean_ms, rows
+round(total_exec_time::numeric, 2) AS total_ms,
+round(mean_exec_time::numeric, 2) AS mean_ms, rows
 FROM pg_stat_statements
 ORDER BY total_exec_time DESC
 LIMIT 10;
@@ -580,12 +580,12 @@ In order to review the whole situation I did the following:
 1. Identified the existing locks and the blocking processes:
 ```sql
 SELECT blocked.pid AS blocked_pid,
-    blocked.usename AS blocked_user,
-    blocked.query AS blocked_query,
-    blocking.pid AS blocking_pid,
-    blocking.usename AS blocking_user,
-    blocking.query AS blocking_query,
-    blocked.wait_event_type, blocked.wait_event
+blocked.usename AS blocked_user,
+blocked.query AS blocked_query,
+blocking.pid AS blocking_pid,
+blocking.usename AS blocking_user,
+blocking.query AS blocking_query,
+blocked.wait_event_type, blocked.wait_event
 FROM pg_stat_activity blocked
 JOIN pg_stat_activity blocking
 ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
@@ -623,7 +623,7 @@ The result confirms two ungranted locks at the time of capture:
 3. Checked which sessions are currently waiting for a lock:
 ```sql
 SELECT pid, usename, state, wait_event_type, wait_event,
-    query_start, now() - query_start AS running_for, query
+query_start, now() - query_start AS running_for, query
 FROM pg_stat_activity
 WHERE wait_event_type = 'Lock';
 ```
@@ -641,7 +641,7 @@ they just can't quickly acquire their locks.
 4. Observed the long-running transactions that may indeed cause that contention:
 ```sql
 SELECT pid, usename, state, xact_start,
-    now() - xact_start AS transaction_duration,  query
+now() - xact_start AS transaction_duration,  query
 FROM pg_stat_activity
 WHERE xact_start IS NOT NULL
 ORDER BY xact_start;
@@ -735,12 +735,12 @@ COMMIT;
 7. I verified that no deadlocks are present anymore with the query I used in the beginning with the updated python script:
 ```sql
 SELECT blocked.pid AS blocked_pid,
-    blocked.usename AS blocked_user,
-    blocked.query AS blocked_query,
-    blocking.pid AS blocking_pid,
-    blocking.usename AS blocking_user,
-    blocking.query AS blocking_query,
-    blocked.wait_event_type, blocked.wait_event
+blocked.usename AS blocked_user,
+blocked.query AS blocked_query,
+blocking.pid AS blocking_pid,
+blocking.usename AS blocking_user,
+blocking.query AS blocking_query,
+blocked.wait_event_type, blocked.wait_event
 FROM pg_stat_activity blocked
 JOIN pg_stat_activity blocking
 ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
@@ -750,34 +750,34 @@ ORDER BY blocked.pid;
 _Updated script part:_
 ```python
 def run_load_test() -> None:
-    workers: list[Callable[[], None]] = [
-        slow_queries_worker,
-        slow_queries_worker,
-        slow_queries_worker,
-        update_worker,
-        row_lock_holder_worker,
-        row_lock_holder_worker,
-        conflicting_update_worker,
-        conflicting_update_worker,
-        table_lock_worker,
-        orders_writer_worker,
-        lambda: deadlock_worker("deadlock_a", 1, 2),
-        lambda: deadlock_worker("deadlock_b", 1, 2),
-        lambda: deadlock_worker("deadlock_c", 3, 4),
-        lambda: deadlock_worker("deadlock_d", 3, 4),
-    ]
+workers: list[Callable[[], None]] = [
+    slow_queries_worker,
+    slow_queries_worker,
+    slow_queries_worker,
+    update_worker,
+    row_lock_holder_worker,
+    row_lock_holder_worker,
+    conflicting_update_worker,
+    conflicting_update_worker,
+    table_lock_worker,
+    orders_writer_worker,
+    lambda: deadlock_worker("deadlock_a", 1, 2),
+    lambda: deadlock_worker("deadlock_b", 1, 2),
+    lambda: deadlock_worker("deadlock_c", 3, 4),
+    lambda: deadlock_worker("deadlock_d", 3, 4),
+]
 
-    threads = []
+threads = []
 
-    for worker in workers:
-        thread = threading.Thread(target=worker, daemon=True)
-        thread.start()
-        threads.append(thread)
+for worker in workers:
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    threads.append(thread)
 
-    print(f"Started {len(threads)} workers. Press Ctrl+C to stop.")
+print(f"Started {len(threads)} workers. Press Ctrl+C to stop.")
 
-    while True:
-        time.sleep(1)
+while True:
+    time.sleep(1)
 ```
 
 | blocked\_pid | blocked\_query | blocking\_pid | blocking\_query | wait\_event\_type | wait\_event |
@@ -810,17 +810,17 @@ so only the attributes that actually exist for a given event are stored.
 
 ```sql
 CREATE TABLE customer_events (
-    event_id SERIAL PRIMARY KEY,
-    customer_id INT,
-    event_type TEXT,
-    event_time TIMESTAMP,
-    source TEXT
+event_id SERIAL PRIMARY KEY,
+customer_id INT,
+event_type TEXT,
+event_time TIMESTAMP,
+source TEXT
 );
 
 CREATE TABLE customer_event_attributes (
-    event_id INT REFERENCES customer_events(event_id),
-    key TEXT,
-    value TEXT
+event_id INT REFERENCES customer_events(event_id),
+key TEXT,
+value TEXT
 );
 ```
 
@@ -828,5 +828,6 @@ This way only attributes that actually exist for a given event are stored,
 rows are smaller, updates produce less dead tuples, and VACUUM runs faster.
 
 A minor structural issue also exists in the `orders` table: `delivery_city` is stored as a string duplicated across all rows rather than a foreign key to a dedicated `cities` table. 
-Normalizing it would reduce storage, eliminate inconsistencies from typos, and make city-related filtering more efficient.#   p o s t g r e s - p e r f o r m a n c e - a n a l y s i s - a n d - o p t i m i z a t i o n  
- 
+Normalizing it would reduce storage, eliminate inconsistencies from typos, and make city-related filtering more efficient.#   p o s t g r e s - p e r f o r m a n c e - a n a l y s i s - a n d - o p t i m i z a t i o n 
+ 
+ 

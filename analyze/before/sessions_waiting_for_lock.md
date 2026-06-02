@@ -1,0 +1,5 @@
+| pid | usename | state | wait\_event\_type | wait\_event | query\_start | running\_for | query |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 32284 | postgres | active | Lock | transactionid | 2026-06-02 09:35:49.404564 +00:00 | 0 years 0 mons 0 days 0 hours 0 mins 2.471547 secs | <br/>                    UPDATE customers<br/>                    SET city = city<br/>                    WHERE customer\_id = 3;<br/>                 |
+| 39080 | postgres | active | Lock | transactionid | 2026-06-02 09:35:45.223749 +00:00 | 0 years 0 mons 0 days 0 hours 0 mins 6.652362 secs | <br/>        SET lock\_timeout = '20s';<br/>        UPDATE customers<br/>        SET phone = 'changed\_' \|\| NOW\(\)::TEXT<br/>        WHERE customer\_id = 3;<br/>         |
+| 26468 | postgres | active | Lock | tuple | 2026-06-02 09:35:50.352463 +00:00 | 0 years 0 mons 0 days 0 hours 0 mins 1.523648 secs | <br/>                    UPDATE customers<br/>                    SET status = 'active'<br/>                    WHERE customer\_id = 3;<br/>                 |
