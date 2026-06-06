@@ -2,8 +2,8 @@
 
 ## Preparation
 As a first step in this investigation, I added these extensions to the postgers:
-* pg_stat_statements: to see all the queries' statistics, such as time they took, number of calls etc.
-* pg_trgm: to make use of the trigram index that can optimize filtering by patterns
+* `pg_stat_statements`: to see all the queries' statistics, such as time they took, number of calls etc.
+* `pg_trgm`: to make use of the trigram index that can optimize filtering by patterns
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -828,6 +828,6 @@ This way only attributes that actually exist for a given event are stored,
 rows are smaller, updates produce less dead tuples, and VACUUM runs faster.
 
 A minor structural issue also exists in the `orders` table: `delivery_city` is stored as a string duplicated across all rows rather than a foreign key to a dedicated `cities` table. 
-Normalizing it would reduce storage, eliminate inconsistencies from typos, and make city-related filtering more efficient.#   p o s t g r e s - p e r f o r m a n c e - a n a l y s i s - a n d - o p t i m i z a t i o n 
+Normalizing it would reduce storage, eliminate inconsistencies from typos, and make city-related filtering more efficient.
  
  
